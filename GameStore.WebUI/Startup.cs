@@ -25,13 +25,13 @@ namespace GameStore.WebUI
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration, IHostingEnvironment hostingEnvironment)
+        public Startup(IConfiguration configuration, IWebHostEnvironment hostingEnvironment)
         {
             Configuration = configuration;
             _hostingEnvironment = hostingEnvironment;
         }
 
-        private readonly IHostingEnvironment _hostingEnvironment;
+        private readonly IWebHostEnvironment _hostingEnvironment;
         public IConfiguration Configuration { get; }
 
         public void ConfigureServices(IServiceCollection services)
@@ -62,7 +62,7 @@ namespace GameStore.WebUI
             services.AddRouting(options => options.LowercaseUrls = true);
             services
                 .AddMvc()
-                .SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
+                .SetCompatibilityVersion(CompatibilityVersion.Version_3_0)
                 .AddFluentValidation(fv =>
                     fv.RegisterValidatorsFromAssemblyContaining<CreateGameCommandValidator>());
 
@@ -81,9 +81,9 @@ namespace GameStore.WebUI
                         Configuration["RedisKeys:InstanceName"]);
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            if (env.IsDevelopment())
+            if (env.EnvironmentName.Equals("Development"))
             {
                 app.UseDeveloperExceptionPage();
                 app.UseStatusCodePages();
@@ -98,19 +98,21 @@ namespace GameStore.WebUI
             app.UseStaticFiles();
             app.UseSession();
             app.UseAuthentication();
-            app.UseMvc(routes =>
+            app.UseRouting();
+            app.UseAuthorization();
+            app.UseEndpoints(routes =>
             {
-                routes.MapRoute(
+                routes.MapControllerRoute(
+                    null,
+                    "{area:exists}/{controller=Admin}/{action=Index}/{id?}");
+                routes.MapControllerRoute(
                     null,
                     "{controller}/{category}",
                     new { controller = "Game", action = "Index" }
                 );
-                routes.MapRoute(
+                routes.MapControllerRoute(
                     null,
                     "{controller=Home}/{action=Index}/{id?}");
-                routes.MapRoute(
-                    "areas",
-                    "{area:exists}/{controller=Admin}/{action=Index}/{id?}");
             });
         }
     }
