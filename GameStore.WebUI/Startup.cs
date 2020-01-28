@@ -20,6 +20,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using StackExchange.Redis;
+using Microsoft.Extensions.Hosting;
 
 namespace GameStore.WebUI
 {
@@ -62,7 +63,6 @@ namespace GameStore.WebUI
             services.AddRouting(options => options.LowercaseUrls = true);
             services
                 .AddMvc()
-                .SetCompatibilityVersion(CompatibilityVersion.Version_3_0)
                 .AddFluentValidation(fv =>
                     fv.RegisterValidatorsFromAssemblyContaining<CreateGameCommandValidator>());
 
@@ -79,11 +79,14 @@ namespace GameStore.WebUI
                 .PersistKeysToStackExchangeRedis(ConnectionMultiplexer.Connect(
                         Configuration["RedisKeys:Configuration"]),
                         Configuration["RedisKeys:InstanceName"]);
+
+            services.AddControllersWithViews();
+            services.AddRazorPages();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            if (env.EnvironmentName.Equals("Development"))
+            if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
                 app.UseStatusCodePages();
@@ -96,14 +99,21 @@ namespace GameStore.WebUI
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
+
             app.UseSession();
-            app.UseAuthentication();
             app.UseRouting();
+
+            app.UseAuthentication();
             app.UseAuthorization();
+
             app.UseEndpoints(routes =>
             {
                 routes.MapControllerRoute(
                     null,
+                    "account/logout",
+                    new { controller = "Account", action = "Logout" });
+                routes.MapControllerRoute(
+                    "Admin",
                     "{area:exists}/{controller=Admin}/{action=Index}/{id?}");
                 routes.MapControllerRoute(
                     null,
