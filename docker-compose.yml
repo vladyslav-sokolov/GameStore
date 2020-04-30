@@ -1,10 +1,10 @@
-version: '3'
+version: '3.3'
 services:
-  game-store:
+  gamestore:
     build:
       context: .
       dockerfile: GameStore.WebUI/Dockerfile
-    image: game-store:latest
+    image: gamestore:latest
     depends_on:
       - redis
       - mysql
@@ -27,6 +27,9 @@ services:
      - back-tier
   mysql:
     image: mysql/mysql-server:5.7
+    ports:
+       - "3306:3306"
+    command: "--skip-grant-tables"
     volumes:
       - mysql-data:/var/lib/mysql
     networks:
@@ -36,7 +39,7 @@ services:
   loadbalancer:
     image: 'dockercloud/haproxy:latest'
     links:
-      - game-store
+      - gamestore
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     ports:
