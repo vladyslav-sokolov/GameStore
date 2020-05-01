@@ -35,6 +35,7 @@ namespace GameStore.Application.Commands.Order.CreateOrder
                 AddedDateTime = dateTime.Now
             };
             context.Orders.Add(entity);
+            await context.SaveChangesAsync(cancellationToken);
 
             var lines = request.Lines.Select(s =>
                 new OrderLine { GameId = s.Game.Id, OrderId = entity.Id, Quantity = s.Quantity });
