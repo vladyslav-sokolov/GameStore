@@ -1,10 +1,10 @@
 version: '3.3'
 services:
-  gamestore:
+  gamestore-web:
     build:
       context: .
       dockerfile: GameStore.WebUI/Dockerfile
-    image: gamestore:latest
+    image: gamestore-web:latest
     depends_on:
       - redis
       - mysql
@@ -17,6 +17,18 @@ services:
       - ConnectionStrings__GameStoreIdentityDatabase= server=mysql;userid=root;password=pass;database=game_store_identity_db;
       - Redis__Configuration= redis
       - RedisKeys__Configuration= redis
+      - Advertisement_API= http://gamestore-advertisement-api/
+    ports:
+      - "80"
+  gamestore-advertisement-api:
+    build:
+      context: .
+      dockerfile: GameStore.API.Advertisement/Dockerfile
+    image: gamestore-advertisement-api:latest
+    networks:
+      - back-tier
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
     ports:
       - "80"
   redis:
@@ -41,7 +53,7 @@ services:
   loadbalancer:
     image: 'dockercloud/haproxy:latest'
     links:
-      - gamestore
+      - gamestore-web
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     ports:

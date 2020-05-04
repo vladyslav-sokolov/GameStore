@@ -1,21 +1,36 @@
-﻿using GameStore.Domain.Common;
-using GameStore.Domain.Models;
+﻿using GameStore.Domain.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Net.Http;
 
 namespace GameStore.WebUI.Areas.ViewComponents
 {
     public class AdvertisementViewComponent : ViewComponent
     {
-        private readonly Advertisement[] advertisements;
+        private readonly IConfiguration configuration;
 
-        public AdvertisementViewComponent(IDateTime dateTime)
+        public AdvertisementViewComponent(IConfiguration configuration)
         {
-            advertisements = new[] { new Advertisement { Description = "Top Sale", EndDateTime = dateTime.Now.AddDays(1) } };
+            this.configuration = configuration;
         }
 
-        public IViewComponentResult Invoke()
+        public async System.Threading.Tasks.Task<IViewComponentResult> InvokeAsync()
         {
-            return View(advertisements);
+            using var client = new HttpClient();
+            var code = await client.GetAsync(configuration["Advertisement_API"] + "advertisement");
+
+            if (code.StatusCode != System.Net.HttpStatusCode.OK)
+            {
+                throw new Exception(code.StatusCode.ToString());
+            }
+
+            var cc = await code.Content.ReadAsStringAsync();
+            var result = (IEnumerable<Advertisement>)JsonConvert.DeserializeObject(cc, typeof(IEnumerable<Advertisement>));
+
+            return View(result);
         }
     }
 }
