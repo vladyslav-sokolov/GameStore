@@ -37,7 +37,8 @@
     </header>
 
     <div class="pb-1">
-        <partial name="_CookieConsentPartial" />
+        @*<partial name="_CookieConsentPartial" />*@
+        @await Component.InvokeAsync("Advertisement")
         <main role="main">
             @RenderBody()
         </main>
