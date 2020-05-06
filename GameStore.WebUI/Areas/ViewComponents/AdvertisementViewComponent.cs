@@ -1,4 +1,5 @@
 ﻿using GameStore.Domain.Models;
+using GameStore.WebUI.ViewModel;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
@@ -19,18 +20,32 @@ namespace GameStore.WebUI.Areas.ViewComponents
 
         public async System.Threading.Tasks.Task<IViewComponentResult> InvokeAsync()
         {
-            using var client = new HttpClient();
-            var code = await client.GetAsync(configuration["Advertisement_API"] + "advertisement");
+            HttpResponseMessage code;
 
-            if (code.StatusCode != System.Net.HttpStatusCode.OK)
+            try
             {
-                throw new Exception(code.StatusCode.ToString());
+                using var client = new HttpClient();
+                code = await client.GetAsync(configuration["Advertisement_API"] + "advertisement");
+
+                if (code.StatusCode != System.Net.HttpStatusCode.OK)
+                {
+                    return View(new AdvertisementViewModel());
+                }
+            }
+            catch (Exception)
+            {
+                return View(new AdvertisementViewModel());
             }
 
-            var cc = await code.Content.ReadAsStringAsync();
-            var result = (IEnumerable<Advertisement>)JsonConvert.DeserializeObject(cc, typeof(IEnumerable<Advertisement>));
+            var result = (IEnumerable<Advertisement>)JsonConvert.DeserializeObject(
+                await code.Content.ReadAsStringAsync(),
+                typeof(IEnumerable<Advertisement>));
 
-            return View(result);
+            return View(new AdvertisementViewModel
+            {
+                IsOk = true,
+                Advertisements = result
+            });
         }
     }
 }

@@ -1,13 +1,22 @@
-﻿@model IEnumerable<GameStore.Domain.Models.Advertisement>
+﻿@model GameStore.WebUI.ViewModel.AdvertisementViewModel
 
 <div class="">
-    @foreach (var advertisement in Model)
+    @if (!Model.IsOk)
     {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            @advertisement.Description <strong>till</strong> @advertisement.EndDateTime.ToLocalTime().ToLongDateString()
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            Advertisement service is not available right now.
         </div>
+    }
+    else
+    {
+        @foreach (var advertisement in Model.Advertisements)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                @advertisement.Description <strong>till</strong> @advertisement.EndDateTime.ToLocalTime().ToLongDateString()
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        }
     }
 </div>

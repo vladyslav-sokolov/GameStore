@@ -1,7 +1,10 @@
 using GameStore.Application.Infrastructure;
+using GameStore.Application.Interfaces;
 using GameStore.Domain.Common;
+using GameStore.Persistence;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -21,6 +24,10 @@ namespace GameStore.API.Advertisement
         {
             services.AddControllers();
             services.AddTransient<IDateTime, MachineDateTime>();
+
+            services.AddDbContext<IGameStoreAdvertisementDbContext, GameStoreAdvertisementDbContext>(
+                options => options.UseNpgsql(
+                    Configuration.GetConnectionString("AdvertisementDatabase")));
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

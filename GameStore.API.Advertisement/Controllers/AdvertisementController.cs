@@ -1,6 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using GameStore.Application.Interfaces;
 using GameStore.Domain.Common;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,22 +11,18 @@ namespace GameStore.API.Advertisement.Controllers
     public class AdvertisementController : ControllerBase
     {
         private readonly IDateTime dateTime;
+        private readonly IGameStoreAdvertisementDbContext context;
 
-        public AdvertisementController(IDateTime dateTime)
+        public AdvertisementController(IDateTime dateTime, IGameStoreAdvertisementDbContext context)
         {
             this.dateTime = dateTime;
+            this.context = context;
         }
 
         [HttpGet]
         public IEnumerable<Domain.Models.Advertisement> Get()
         {
-            var rng = new Random();
-            return Enumerable.Range(1, 2).Select(index => new Domain.Models.Advertisement
-            {
-                Description = "Top " + index,
-                EndDateTime = dateTime.Now.AddDays(index)
-            })
-            .ToArray();
+            return context.Advertisements.ToArray();
         }
     }
 }

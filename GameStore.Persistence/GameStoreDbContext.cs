@@ -1,5 +1,6 @@
 ﻿using GameStore.Application.Interfaces;
 using GameStore.Domain.Models;
+using GameStore.Persistence.Configurations;
 using GameStore.Persistence.Extensions;
 using Microsoft.EntityFrameworkCore;
 
@@ -32,7 +33,11 @@ namespace GameStore.Persistence
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.ApplyConfigurationsFromAssembly(typeof(GameStoreDbContext).Assembly);
+            modelBuilder.ApplyConfiguration(new CategoryConfiguration());
+            modelBuilder.ApplyConfiguration(new GameCategoryConfiguration());
+            modelBuilder.ApplyConfiguration(new GameConfiguration());
+            modelBuilder.ApplyConfiguration(new OrderConfiguration());
+            modelBuilder.ApplyConfiguration(new OrderLineConfiguration());
         }
     }
 }
