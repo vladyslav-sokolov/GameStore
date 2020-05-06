@@ -1,7 +1,17 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: gamestore
+spec:
+  backend:
+    serviceName: gamestore-web
+    servicePort: 80
+
+---
 apiVersion: v1
 kind: Service
 metadata:
-  name: gamestore
+  name: gamestore-web
 spec:
   ports:
   - port: 80
@@ -9,56 +19,266 @@ spec:
     protocol: TCP
     name: http
   selector:
-    app: gamestore
-  type: NodePort
+    app: gamestore-web
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gamestore-advertisement-api
+spec:
+  ports:
+  - port: 80
+    targetPort: 80
+    protocol: TCP
+    name: http
+  selector:
+    app: gamestore-advertisement-api
 
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: gamestore-env
+  name: gamestore-web-env
 data:
-  GAMESTORE_ENV_DATA
+  ASPNETCORE_ENVIRONMENT: "Production"
+  ConnectionStrings__GameStoreDatabase: "server=web-db;userid=root;password=pass;database=game_store_db;"
+  ConnectionStrings__GameStoreIdentityDatabase: "server=web-db;userid=root;password=pass;database=game_store_identity_db;"
+  Redis__Configuration: "web-redis"
+  RedisKeys__Configuration: "web-redis"
+  Advertisement_API: "http://gamestore-advertisement-api/"
   
 ---
-apiVersion: extensions/v1beta1
-kind: Ingress
+apiVersion: v1
+kind: ConfigMap
 metadata:
-  name: gamestore
-spec:
-  backend:
-    serviceName: gamestore
-    servicePort: 80
+  name: gamestore-advertisement-api-env
+data:
+  ASPNETCORE_ENVIRONMENT: "Production"
+  ConnectionStrings__AdvertisementDatabase: "Server=gamestore-advertisement-api-db;Port=5432;Database=game_store_advertisement_db;User Id=postgres;Password=pass;"
 
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: gamestore
+  name: gamestore-web
 spec:
+  selector:
+    matchLabels:
+      app: gamestore-web
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: gamestore-web
+    spec:
+      containers:
+      - name: gamestore-web
+        image: gamestore-web:latest
+        imagePullPolicy: "IfNotPresent"
+        envFrom:
+          - configMapRef:
+              name: gamestore-web-env
+        ports:
+          - containerPort: 80
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gamestore-advertisement-api
+spec:
+  selector:
+    matchLabels:
+      app: gamestore-advertisement-api
   replicas: 1
   template:
     metadata:
       labels:
-        app: gamestore
+        app: gamestore-advertisement-api
     spec:
       containers:
-      - name: gamestore
-        image: GAMESTORE_IMAGE
+      - name: gamestore-advertisement-api
+        image: gamestore-advertisement-api:latest
+        imagePullPolicy: "IfNotPresent"
         envFrom:
           - configMapRef:
-              name: gamestore-env
+              name: gamestore-advertisement-api-env
         ports:
           - containerPort: 80
-        livenessProbe:
-          httpGet:
-            path: /
-            port: 80
-          initialDelaySeconds: 5
-          periodSeconds: 5
-        readinessProbe:
-          httpGet:
-            path: /
-            port: 80
-          initialDelaySeconds: 3
-          periodSeconds: 5
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-db
+spec:
+  ports:
+  - port: 3306
+  selector:
+    app: mysql
+  clusterIP: None
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql
+spec:
+  selector:
+    matchLabels:
+      app: mysql
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+      - image: mysql:5.7
+        name: mysql
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: pass
+        ports:
+        - containerPort: 3306
+          name: mysql
+        volumeMounts:
+        - name: mysql-persistent-storage
+          mountPath: /var/lib/mysql
+      volumes:
+      - name: mysql-persistent-storage
+        persistentVolumeClaim:
+          claimName: mysql-pv-claim
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mysql-pv-volume
+  labels:
+    type: local
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/mnt/mysql"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-pv-claim
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gamestore-advertisement-api-db
+spec:
+  ports:
+  - port: 5432
+  selector:
+    app: postgres
+  clusterIP: None
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+spec:
+  selector:
+    matchLabels:
+      app: postgres
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+      - image: postgres:12
+        name: postgres
+        env:
+        - name: POSTGRES_PASSWORD
+          value: pass
+        ports:
+        - containerPort: 5432
+          name: postgres
+        volumeMounts:
+        - name: postgres-persistent-storage
+          mountPath: /var/lib/postgresql/data
+      volumes:
+      - name: postgres-persistent-storage
+        persistentVolumeClaim:
+          claimName: postgres-pv-claim
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: postgres-pv-volume
+  labels:
+    type: local
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/mnt/postgres"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pv-claim
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+
+apiVersion: apps/v1  # API version
+kind: Deployment
+metadata:
+  name: redis-master # Unique name for the deployment
+  labels:
+    app: redis       # Labels to be applied to this deployment
+spec:
+  selector:
+    matchLabels:     # This deployment applies to the Pods matching these labels
+      app: redis
+  replicas: 1        # Run a single pod in the deployment
+  template:          # Template for the pods that will be created by this deployment
+    metadata:
+      labels:        # Labels to be applied to the Pods in this deployment
+        app: redis
+    spec:            # Spec for the container which will be run inside the Pod.
+      containers:
+      - name: master
+        image: redis
+        ports:
+        - containerPort: 6379
+---        
+apiVersion: v1
+kind: Service        # Type of Kubernetes resource
+metadata:
+  name: web-redis # Name of the Kubernetes resource
+  labels:            # Labels that will be applied to this resource
+    app: redis
+spec:
+  ports:
+  - port: 6379       # Map incoming connections on port 6379 to the target port 6379 of the Pod
+  selector:          # Map any Pod with the specified labels to this service
+    app: redis

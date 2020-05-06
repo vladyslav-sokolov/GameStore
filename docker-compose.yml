@@ -4,7 +4,7 @@ services:
     build:
       context: .
       dockerfile: GameStore.WebUI/Dockerfile
-    image: gamestore-web:latest
+    image: gamestore-web
     depends_on:
       - redis
       - mysql
@@ -24,7 +24,7 @@ services:
     build:
       context: .
       dockerfile: GameStore.API.Advertisement/Dockerfile
-    image: gamestore-advertisement-api:latest
+    image: gamestore-advertisement-api
     depends_on:
       - postgres
     networks:
