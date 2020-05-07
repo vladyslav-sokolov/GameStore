@@ -28,6 +28,6 @@ orbs:
   gcp-gcr: circleci/gcp-gcr@0.7.1
 version: 2.1
 workflows:
-  build:
+  commit:
     jobs:
       - build-web
