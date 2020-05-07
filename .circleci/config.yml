@@ -41,5 +41,9 @@ workflows:
   build:
     jobs:
       - test
-      - build-web
+      - build-web:
+          requires:
+            - test
       - build-advertisement-api
+          requires:
+            - test
