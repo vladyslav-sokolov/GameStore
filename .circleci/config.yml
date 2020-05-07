@@ -36,4 +36,4 @@ version: 2.1
 workflows:
   commit:
     jobs:
-      - build-and-push
+      - build-web
