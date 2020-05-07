@@ -44,3 +44,6 @@ workflows:
       - build-web:
           requires:
             - test
+      - build-advertisement-api:
+          requires:
+            - test
