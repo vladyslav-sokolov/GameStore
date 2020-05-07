@@ -23,6 +23,16 @@ jobs:
           dockerfile: ./GameStore.WebUI/Dockerfile
       - gcp-gcr/push-image:
           image: gamestore-web
+  build-advertisement-api:
+    executor: gcp-gcr/default
+    steps:
+      - checkout
+      - gcp-gcr/gcr-auth
+      - gcp-gcr/build-image:
+          image: gamestore-advertisement-api
+          dockerfile: ./GameStore.API.Advertisement/Dockerfile
+      - gcp-gcr/push-image:
+          image: gamestore-advertisement-api
 
 orbs:
   gcp-gcr: circleci/gcp-gcr@0.7.1
@@ -30,4 +40,6 @@ version: 2.1
 workflows:
   build:
     jobs:
+      - test
       - build-web
+      - build-advertisement-api
