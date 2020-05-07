@@ -19,7 +19,6 @@ jobs:
       - checkout
       - gcp-gcr/gcr-auth
       - gcp-gcr/build-image:
-          context: .
           image: gamestore-web
           registry-url: us.gcr.io
       - gcp-gcr/push-image:
