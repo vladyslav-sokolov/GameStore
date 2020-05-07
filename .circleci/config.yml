@@ -18,16 +18,16 @@ jobs:
     steps:
       - checkout
       - gcp-gcr/gcr-auth
-      - gcp-gcr/build-and-push-image:
+      - gcp-gcr/build-image:
           image: gamestore-web
-          registry-url: us.gcr.io
-          context: .
           dockerfile: ./GameStore.WebUI/Dockerfile
+      - gcp-gcr/push-image:
+          image: gamestore-web
 
 orbs:
   gcp-gcr: circleci/gcp-gcr@0.7.1
 version: 2.1
 workflows:
-  commit:
+  build:
     jobs:
       - build-web
