@@ -10,10 +10,10 @@ jobs:
          name: Build and run unit tests
          command: |
            docker build --pull -t gamestore:unittests -f ./GameStore.UnitTests/Dockerfile .
-           mkdir test-results
-           docker run --rm -v test-results:/app/GameStore.UnitTests/TestResults gamestore:unittests
+           docker run --name gamestore-tests gamestore:unittests
+           docker cp gamestore-tests:/app/GameStore.UnitTests/TestResults ./
       - store_test_results:
-         path: test-results
+         path: TestResults
 
 workflows:
   version: 2
