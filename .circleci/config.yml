@@ -35,8 +35,6 @@ jobs:
             echo "Digest is: $(</tmp/digest.txt)"
 
 workflows:
-  version: 2
-  build:
+  commit:
     jobs:
-      - test
-      - build-web:
+      - build-web
