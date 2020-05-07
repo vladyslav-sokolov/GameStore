@@ -3,4 +3,4 @@ WORKDIR /app
 
 COPY . ./
 RUN dotnet build -c Release
-ENTRYPOINT ["dotnet", "test", "--logger:xunit"]
+ENTRYPOINT ["dotnet", "test", "--logger:junit"]
