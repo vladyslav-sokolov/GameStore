@@ -18,21 +18,16 @@ jobs:
     steps:
       - checkout
       - gcp-gcr/gcr-auth
-      - gcp-gcr/build-image:
+      - gcp-gcr/build-and-push-image:
           image: gamestore-web
           registry-url: us.gcr.io
-      - gcp-gcr/push-image:
-          digest-path: /tmp/digest.txt
-          image: gamestore-web
-          registry-url: eu.gcr.io
-      - run:
-          command: |
-            echo "Digest is: $(</tmp/digest.txt)"
+          context: .
+          dockerfile: ./GameStore.WebUI/Dockerfile
 
 orbs:
   gcp-gcr: circleci/gcp-gcr@0.7.1
 version: 2.1
 workflows:
-  commit:
+  build:
     jobs:
       - build-web
