@@ -1,0 +1,48 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: gamestore-web
+spec:
+  ports:
+  - port: 80
+    name: http
+  selector:
+    app: gamestore-web
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gamestore-web-env
+data:
+  ASPNETCORE_ENVIRONMENT: "Production"
+  ConnectionStrings__GameStoreDatabase: "server=web-db;userid=root;password=pass;database=game_store_db;"
+  ConnectionStrings__GameStoreIdentityDatabase: "server=web-db;userid=root;password=pass;database=game_store_identity_db;"
+  Redis__Configuration: "web-redis"
+  RedisKeys__Configuration: "web-redis"
+  Advertisement_API: "http://gamestore-advertisement-api/"
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gamestore-web
+spec:
+  selector:
+    matchLabels:
+      app: gamestore-web
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: gamestore-web
+    spec:
+      containers:
+      - name: gamestore-web
+        image: gcr.io/vs-college/gamestore-web:latest
+        imagePullPolicy: "IfNotPresent"
+        envFrom:
+          - configMapRef:
+              name: gamestore-web-env
+        ports:
+          - containerPort: 80

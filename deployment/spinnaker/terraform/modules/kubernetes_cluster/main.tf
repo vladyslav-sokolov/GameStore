@@ -1,37 +1,30 @@
 resource "google_container_cluster" "primary" {
-  name     = "my-gke-cluster"
-  location = "us-central1"
+  provider                 = google-beta
+  name                     = var.name
+  location                 = var.location
+  initial_node_count       = var.node_count
 
-  remove_default_node_pool = true
-  initial_node_count       = 1
+  release_channel          {
+    channel = "REGULAR"
+  }
 
-  master_auth {
-    username = ""
-    password = ""
-
-    client_certificate_config {
-      issue_client_certificate = false
+  addons_config {
+    istio_config {
+      disabled = var.istio_disabled
+      auth     = "AUTH_MUTUAL_TLS"
     }
   }
-}
-
-resource "google_container_node_pool" "primary_preemptible_nodes" {
-  name       = "my-node-pool"
-  location   = "us-central1"
-  cluster    = google_container_cluster.primary.name
-  node_count = 1
 
   node_config {
-    preemptible  = true
-    machine_type = "n1-standard-2"
-
-    metadata = {
-      disable-legacy-endpoints = "true"
-    }
+    preemptible  = false
+    machine_type = var.machine_type
 
     oauth_scopes = [
       "https://www.googleapis.com/auth/logging.write",
       "https://www.googleapis.com/auth/monitoring",
+      "https://www.googleapis.com/auth/devstorage.read_only",
+      "https://www.googleapis.com/auth/compute"
     ]
-  }
+    }
+   
 }
