@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: gamestore-advertisement-api
+spec:
+  ports:
+  - port: 80
+    name: http
+  selector:
+    app: gamestore-advertisement-api
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gamestore-advertisement-api-env
+data:
+  ASPNETCORE_ENVIRONMENT: "Production"
+  ConnectionStrings__AdvertisementDatabase: "Server=gamestore-advertisement-api-db;Port=5432;Database=game_store_advertisement_db;User Id=postgres;Password=pass;"
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gamestore-advertisement-api
+spec:
+  selector:
+    matchLabels:
+      app: gamestore-advertisement-api
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: gamestore-advertisement-api
+    spec:
+      containers:
+      - name: gamestore-advertisement-api
+        image: gcr.io/vs-college/gamestore-advertisement-api:latest
+        imagePullPolicy: "IfNotPresent"
+        envFrom:
+          - configMapRef:
+              name: gamestore-advertisement-api-env
+        ports:
+          - containerPort: 80
