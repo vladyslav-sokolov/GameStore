@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using System.Linq;
 
 namespace GameStore.WebUI
 {
@@ -23,6 +24,11 @@ namespace GameStore.WebUI
 
                 context.Migrate();
                 identityContext.Database.Migrate();
+
+                if (!context.Categories.Any())
+                {
+                    context.SeedData();
+                }
             }
 
             host.Run();
