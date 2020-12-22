@@ -5,6 +5,7 @@ services:
       context: .
       dockerfile: GameStore.WebUI/Dockerfile
     image: gamestore-web
+    restart: always
     depends_on:
       - redis
       - mysql
@@ -25,6 +26,7 @@ services:
       context: .
       dockerfile: GameStore.API.Advertisement/Dockerfile
     image: gamestore-advertisement-api
+    restart: always
     depends_on:
       - postgres
     networks:
@@ -44,6 +46,7 @@ services:
      - back-tier
   mysql:
     image: mysql/mysql-server:5.7
+    restart: always
     ports:
        - "3306:3306"
     command: "--skip-grant-tables"

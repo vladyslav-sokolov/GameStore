@@ -1,4 +1,5 @@
 jobs:
+
   test:
     docker:
       - image: docker:17.05.0-ce-git
@@ -13,6 +14,7 @@ jobs:
            docker cp gamestore-tests:/app/GameStore.UnitTests/TestResults ./
       - store_test_results:
          path: TestResults
+
   build-web:
     executor: gcp-gcr/default
     steps:
@@ -23,10 +25,7 @@ jobs:
           dockerfile: ./GameStore.WebUI/Dockerfile
       - gcp-gcr/push-image:
           image: gamestore-web
-      - gcp-gcr/tag-image:
-          image: gamestore-web
-          source-tag: latest
-          target-tag: << pipeline.git.branch >>
+
   build-advertisement-api:
     executor: gcp-gcr/default
     steps:
@@ -37,10 +36,6 @@ jobs:
           dockerfile: ./GameStore.API.Advertisement/Dockerfile
       - gcp-gcr/push-image:
           image: gamestore-advertisement-api
-      - gcp-gcr/tag-image:
-          image: gamestore-advertisement-api
-          source-tag: latest
-          target-tag: << pipeline.git.branch >>
 
 orbs:
   gcp-gcr: circleci/gcp-gcr@0.7.1
