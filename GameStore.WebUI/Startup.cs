@@ -63,7 +63,8 @@ namespace GameStore.WebUI
             services
                 .AddMvc()
                 .AddFluentValidation(fv =>
-                    fv.RegisterValidatorsFromAssemblyContaining<CreateGameCommandValidator>());
+                    fv.RegisterValidatorsFromAssemblyContaining<CreateGameCommandValidator>())
+                .AddRazorRuntimeCompilation();
 
             services.AddStackExchangeRedisCache(
                 options =>

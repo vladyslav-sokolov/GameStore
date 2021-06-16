@@ -29,6 +29,11 @@ namespace GameStore.Persistence
             SaveChanges();
         }
 
+        //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        //{
+        //    optionsBuilder.UseMySql("server=mysql;userid=root;password=pass;database=game_store_db;");
+        //}
+
         public GameStoreDbContext(DbContextOptions<GameStoreDbContext> options) : base(options) { }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

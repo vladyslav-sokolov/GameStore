@@ -28,5 +28,7 @@ namespace GameStore.Domain.Models
         public bool GiftWrap { get; set; }
 
         public DateTime AddedDateTime { get; set; }
+
+        public decimal TotalPrice { get; set; }
     }
 }

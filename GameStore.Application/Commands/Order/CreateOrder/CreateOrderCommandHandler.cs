@@ -32,8 +32,10 @@ namespace GameStore.Application.Commands.Order.CreateOrder
                 Zip = request.Zip,
                 Country = request.Country,
                 GiftWrap = request.GiftWrap,
-                AddedDateTime = dateTime.Now
+                AddedDateTime = dateTime.Now,
+                TotalPrice = request.Lines.Select(s => s.Quantity * s.Game.Price).Sum()
             };
+
             context.Orders.Add(entity);
             await context.SaveChangesAsync(cancellationToken);
 

@@ -31,6 +31,8 @@ namespace GameStore.Persistence.Configurations
             builder.Property(e => e.GiftWrap).IsRequired();
 
             builder.Property(e => e.AddedDateTime).IsRequired();
+
+            builder.Property(e => e.TotalPrice).IsRequired();
         }
     }
 }

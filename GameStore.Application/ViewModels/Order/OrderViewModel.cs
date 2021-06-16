@@ -16,6 +16,8 @@ namespace GameStore.Application.ViewModels.Order
 
         public string Country { get; set; }
 
+        public decimal TotalPrice { get; set; }
+
         public DateTime AddedDateTime { get; set; }
 
         public void CreateMappings(Profile configuration)
