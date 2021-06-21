@@ -20,7 +20,6 @@ data:
   ConnectionStrings__GameStoreIdentityDatabase: "server=web-db;userid=root;password=pass;database=game_store_identity_db;"
   Redis__Configuration: "web-redis"
   RedisKeys__Configuration: "web-redis"
-  Advertisement_API: "http://gamestore-advertisement-api/"
 
 ---
 apiVersion: apps/v1

@@ -18,22 +18,6 @@ services:
       - ConnectionStrings__GameStoreIdentityDatabase= server=mysql;userid=root;password=pass;database=game_store_identity_db;
       - Redis__Configuration= redis
       - RedisKeys__Configuration= redis
-      - Advertisement_API= http://gamestore-advertisement-api/
-    ports:
-      - "80"
-  gamestore-advertisement-api:
-    build:
-      context: .
-      dockerfile: GameStore.API.Advertisement/Dockerfile
-    image: gamestore-advertisement-api
-    restart: always
-    depends_on:
-      - postgres
-    networks:
-      - back-tier
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Production
-      - ConnectionStrings__AdvertisementDatabase= Server=postgres;Port=5432;Database=AdvertisementDatabase;User Id=postgres;Password=pass;
     ports:
       - "80"
   redis:
@@ -56,17 +40,6 @@ services:
      - back-tier
     environment:
       MYSQL_ROOT_PASSWORD: pass
-  postgres:
-    image: postgres
-    restart: always
-    environment:
-      POSTGRES_PASSWORD: pass
-    networks:
-      - back-tier
-    ports:
-       - "5432:5432"
-    volumes:
-      - postgres-data:/var/lib/postgres
   loadbalancer:
     image: 'dockercloud/haproxy:latest'
     links:
@@ -82,7 +55,6 @@ volumes:
   redis-data:
     driver: local
   mysql-data:
-  postgres-data:
 
 networks:
   front-tier:
