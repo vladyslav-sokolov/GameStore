@@ -1,20 +1,23 @@
-jobs:
+version: 2.1
 
+orbs:
+  gcp-gcr: circleci/gcp-gcr@0.7.1
+
+jobs:
   test:
     docker:
       - image: docker:17.05.0-ce-git
-    steps: 
+    steps:
       - checkout
       - setup_remote_docker
-      - run: 
-         name: Build and run unit tests
-         command: |
-           docker build --pull -t gamestore:unittests -f ./GameStore.UnitTests/Dockerfile .
-           docker run --name gamestore-tests gamestore:unittests
-           docker cp gamestore-tests:/app/GameStore.UnitTests/TestResults ./
+      - run:
+          name: Build and run unit tests
+          command: |
+            docker build --pull -t gamestore:unittests -f ./GameStore.UnitTests/Dockerfile .
+            docker run --name gamestore-tests gamestore:unittests
+            docker cp gamestore-tests:/app/GameStore.UnitTests/TestResults ./
       - store_test_results:
-         path: TestResults
-
+          path: TestResults
   build-web:
     executor: gcp-gcr/default
     steps:
@@ -25,7 +28,10 @@ jobs:
           dockerfile: ./GameStore.WebUI/Dockerfile
       - gcp-gcr/push-image:
           image: gamestore-web
-
+      - gcp-gcr/tag-image:
+          image: gamestore-web
+          source-tag: latest
+          target-tag: << pipeline.git.revision >>
   build-advertisement-api:
     executor: gcp-gcr/default
     steps:
@@ -36,10 +42,11 @@ jobs:
           dockerfile: ./GameStore.API.Advertisement/Dockerfile
       - gcp-gcr/push-image:
           image: gamestore-advertisement-api
+      - gcp-gcr/tag-image:
+          image: gamestore-advertisement-api
+          source-tag: latest
+          target-tag: << pipeline.git.revision >>
 
-orbs:
-  gcp-gcr: circleci/gcp-gcr@0.7.1
-version: 2.1
 workflows:
   build:
     jobs:
